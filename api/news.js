@@ -18,7 +18,7 @@ const FEEDS = [
   { url: 'https://www.investing.com/rss/news.rss', source: 'Investing.com', category: 'marches' },
   { url: 'https://www.investing.com/rss/forex.rss', source: 'Investing.com', category: 'forex' },
   { url: 'https://www.investing.com/rss/commodities.rss', source: 'Investing.com', category: 'matieres-premieres' },
-  { url: 'https://www.investing.com/rss/stock_market.rss', source: 'Investing.com', category: 'actions' },
+  { url: 'https://www.investing.com/rss/news_25.rss', source: 'Investing.com', category: 'actions' },
   { url: 'https://www.investing.com/rss/news_14.rss', source: 'Investing.com', category: 'economie' },
   { url: 'https://feeds.marketwatch.com/marketwatch/topstories/', source: 'MarketWatch', category: 'marches' },
   { url: 'https://investinglive.com/feed', source: 'InvestingLive', category: 'forex' },
