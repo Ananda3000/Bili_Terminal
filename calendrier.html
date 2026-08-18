@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MonTerminal — Calendrier économique</title>
+<meta name="description" content="Calendrier économique : publications macro, décisions de taux, données d'emploi et d'inflation à venir." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">MonTerminal</span>
+      </div>
+      <nav class="mainnav">
+        <a href="index.html" class="nav-item">Actualités</a>
+        <a href="marches.html" class="nav-item">Marchés</a>
+        <a href="calendrier.html" class="nav-item active">Calendrier</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Portefeuille</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Carte</a>
+      </nav>
+      <div class="topbar-right">
+        <span id="clock" class="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <div>
+          <h1 style="font-size: 18px; margin: 0 0 4px 0;">Calendrier économique</h1>
+          <div class="status-line">
+            Publications macro à venir — filtrable par pays et par importance directement dans le widget ci-dessous.
+          </div>
+        </div>
+      </div>
+
+      <div class="widget-card">
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+          {
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "width": "100%",
+            "height": "650",
+            "locale": "fr",
+            "importanceFilter": "0,1",
+            "countryFilter": "us,eu,fr,gb,jp,cn,de"
+          }
+          </script>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const clockEl = document.getElementById('clock');
+      function tick() {
+        clockEl.textContent = new Date().toLocaleTimeString('fr-FR');
+      }
+      tick();
+      setInterval(tick, 1000);
+    })();
+  </script>
+</body>
+</html>
