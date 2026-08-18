@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MonTerminal — Actualités Marchés</title>
+<meta name="description" content="Flux d'actualités finance, marchés, forex, crypto et matières premières, en temps réel." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">MonTerminal</span>
+      </div>
+      <nav class="mainnav">
+        <a href="#" class="nav-item active">Actualités</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Marchés</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Calendrier</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Portefeuille</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Carte</a>
+      </nav>
+      <div class="topbar-right">
+        <span id="clock" class="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <div class="pills" id="categoryPills">
+          <button class="pill active" data-category="all">Tout</button>
+          <button class="pill" data-category="marches">Marchés</button>
+          <button class="pill" data-category="forex">Forex</button>
+          <button class="pill" data-category="actions">Actions</button>
+          <button class="pill" data-category="matieres-premieres">Matières premières</button>
+          <button class="pill" data-category="economie">Économie</button>
+          <button class="pill" data-category="crypto">Crypto</button>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="searchInput" class="search-input" placeholder="Rechercher un article, un actif..." />
+          <button id="refreshBtn" class="refresh-btn" title="Actualiser">⟳</button>
+        </div>
+      </div>
+
+      <div class="status-line">
+        <span id="statusText">Chargement des actualités…</span>
+      </div>
+
+      <section id="feed" class="feed-grid" aria-live="polite">
+        <!-- Les cartes d'articles sont injectées ici en JS -->
+      </section>
+
+      <div id="emptyState" class="empty-state hidden">
+        Aucun article ne correspond à ta recherche.
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
