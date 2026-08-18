@@ -73,14 +73,21 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Groupe 2 : symboles avec bourse précisée, interrogés individuellement
+    // Groupe 2 : symboles avec bourse précisée, interrogés individuellement.
+    // On ne sait pas si l'utilisateur a tapé un nom de bourse (ex: "Tokyo Stock
+    // Exchange") ou un pays (ex: "Japan") dans le champ unique du formulaire,
+    // donc on essaie d'abord comme "exchange", puis comme "country" si ça échoue.
     if (disambiguatedItems.length) {
       const results = await Promise.allSettled(
-        disambiguatedItems.slice(0, 8).map((item) => {
-          const parts = [`symbol=${encodeURIComponent(item.symbol)}`];
-          if (item.exchange) parts.push(`exchange=${encodeURIComponent(item.exchange)}`);
-          if (item.country) parts.push(`country=${encodeURIComponent(item.country)}`);
-          return fetchQuote(parts.join('&'), apiKey).then((data) => ({ symbol: item.symbol, data }));
+        disambiguatedItems.slice(0, 8).map(async (item) => {
+          const value = item.exchange || item.country;
+          const base = `symbol=${encodeURIComponent(item.symbol)}`;
+
+          let data = await fetchQuote(`${base}&exchange=${encodeURIComponent(value)}`, apiKey);
+          if (!data || data.status === 'error' || data.code) {
+            data = await fetchQuote(`${base}&country=${encodeURIComponent(value)}`, apiKey);
+          }
+          return { symbol: item.symbol, data };
         })
       );
       results.forEach((r, idx) => {
