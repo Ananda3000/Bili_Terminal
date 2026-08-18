@@ -1,111 +1,62 @@
-const Parser = require('rss-parser');
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MonTerminal — Actualités Marchés</title>
+<meta name="description" content="Flux d'actualités finance, marchés, forex, crypto et matières premières, en temps réel." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">MonTerminal</span>
+      </div>
+      <nav class="mainnav">
+        <a href="#" class="nav-item active">Actualités</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Marchés</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Calendrier</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Portefeuille</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Carte</a>
+      </nav>
+      <div class="topbar-right">
+        <span id="clock" class="clock">--:--:--</span>
+      </div>
+    </header>
 
-const parser = new Parser({
-  timeout: 8000,
-  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; MonTerminalNewsBot/1.0)' },
-  customFields: {
-    item: [
-      ['media:content', 'mediaContent', { keepArray: true }],
-      ['media:thumbnail', 'mediaThumbnail'],
-      ['enclosure', 'enclosure'],
-    ],
-  },
-});
+    <main class="content">
+      <div class="toolbar">
+        <div class="pills" id="categoryPills">
+          <button class="pill active" data-category="all">Tout</button>
+          <button class="pill" data-category="marches">Marchés</button>
+          <button class="pill" data-category="forex">Forex</button>
+          <button class="pill" data-category="actions">Actions</button>
+          <button class="pill" data-category="matieres-premieres">Matières premières</button>
+          <button class="pill" data-category="economie">Économie</button>
+          <button class="pill" data-category="crypto">Crypto</button>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="searchInput" class="search-input" placeholder="Rechercher un article, un actif..." />
+          <button id="refreshBtn" class="refresh-btn" title="Actualiser">⟳</button>
+        </div>
+      </div>
 
-// Flux RSS publics et gratuits (aucune clé API nécessaire).
-// Si un flux tombe en panne, il est simplement ignoré (Promise.allSettled).
-const FEEDS = [
-  { url: 'https://www.investing.com/rss/news.rss', source: 'Investing.com', category: 'marches' },
-  { url: 'https://www.investing.com/rss/forex.rss', source: 'Investing.com', category: 'forex' },
-  { url: 'https://www.investing.com/rss/commodities.rss', source: 'Investing.com', category: 'matieres-premieres' },
-  { url: 'https://www.investing.com/rss/stock_market.rss', source: 'Investing.com', category: 'actions' },
-  { url: 'https://www.investing.com/rss/economic_indicators.rss', source: 'Investing.com', category: 'economie' },
-  { url: 'https://feeds.marketwatch.com/marketwatch/topstories/', source: 'MarketWatch', category: 'marches' },
-  { url: 'https://investinglive.com/feed', source: 'InvestingLive', category: 'forex' },
-  { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', category: 'crypto' },
-  { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', category: 'crypto' },
-];
+      <div class="status-line">
+        <span id="statusText">Chargement des actualités…</span>
+      </div>
 
-function extractImage(item) {
-  try {
-    if (item.enclosure && item.enclosure.url) return item.enclosure.url;
-    if (item.mediaContent && item.mediaContent.length) {
-      const withUrl = item.mediaContent.find((m) => m.$ && m.$.url);
-      if (withUrl) return withUrl.$.url;
-    }
-    if (item.mediaThumbnail && item.mediaThumbnail.$ && item.mediaThumbnail.$.url) {
-      return item.mediaThumbnail.$.url;
-    }
-    // Essaye d'extraire une image depuis le HTML du contenu, si présent
-    const html = item['content:encoded'] || item.content || '';
-    const match = /<img[^>]+src="([^">]+)"/i.exec(html);
-    if (match) return match[1];
-  } catch (e) {
-    // ignore
-  }
-  return null;
-}
+      <section id="feed" class="feed-grid" aria-live="polite">
+        <!-- Les cartes d'articles sont injectées ici en JS -->
+      </section>
 
-function cleanText(text, maxLen = 220) {
-  if (!text) return '';
-  const stripped = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-  return stripped.length > maxLen ? stripped.slice(0, maxLen).trim() + '…' : stripped;
-}
+      <div id="emptyState" class="empty-state hidden">
+        Aucun article ne correspond à ta recherche.
+      </div>
+    </main>
+  </div>
 
-async function fetchFeed(feed) {
-  const parsed = await parser.parseURL(feed.url);
-  return (parsed.items || []).map((item) => ({
-    title: cleanText(item.title, 160),
-    link: item.link,
-    source: feed.source,
-    category: feed.category,
-    excerpt: cleanText(item.contentSnippet || item.content || item.summary || ''),
-    image: extractImage(item),
-    publishedAt: item.isoDate || item.pubDate || null,
-  }));
-}
-
-module.exports = async (req, res) => {
-  try {
-    const results = await Promise.allSettled(FEEDS.map(fetchFeed));
-
-    let articles = [];
-    results.forEach((r) => {
-      if (r.status === 'fulfilled') {
-        articles = articles.concat(r.value);
-      }
-    });
-
-    // Déduplique par lien
-    const seen = new Set();
-    articles = articles.filter((a) => {
-      if (!a.link || seen.has(a.link)) return false;
-      seen.add(a.link);
-      return true;
-    });
-
-    // Trie du plus récent au plus ancien
-    articles.sort((a, b) => {
-      const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-      const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-      return dateB - dateA;
-    });
-
-    // Limite raisonnable
-    articles = articles.slice(0, 150);
-
-    const failedFeeds = results
-      .map((r, i) => (r.status === 'rejected' ? FEEDS[i].source : null))
-      .filter(Boolean);
-
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-    res.status(200).json({
-      updatedAt: new Date().toISOString(),
-      count: articles.length,
-      failedFeeds,
-      articles,
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Erreur lors de la récupération des actualités', details: String(err) });
-  }
-};
+  <script src="script.js"></script>
+</body>
+</html>
