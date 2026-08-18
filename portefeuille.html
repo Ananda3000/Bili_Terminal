@@ -44,6 +44,7 @@
         <div class="hero-label">Valeur totale du portefeuille</div>
         <div class="hero-value" id="totalValue">—</div>
         <div class="stat-delta neutral" id="totalDelta">—</div>
+        <div class="form-hint" id="totalValueNote" style="margin-top: 8px;"></div>
       </div>
 
       <!-- Formulaire d'ajout -->
@@ -53,6 +54,10 @@
           <div class="field">
             <label for="symbolInput">Symbole *</label>
             <input id="symbolInput" type="text" placeholder="ex: AAPL, MSFT, BTC/USD" required />
+          </div>
+          <div class="field">
+            <label for="exchangeInput">Bourse / pays (si international)</label>
+            <input id="exchangeInput" type="text" placeholder="ex: Japan, London Stock Exchange" />
           </div>
           <div class="field">
             <label for="nameInput">Nom (pour les actus)</label>
@@ -68,7 +73,7 @@
           </div>
           <button type="submit" class="add-btn">+ Ajouter</button>
         </form>
-        <p class="form-hint">Le symbole doit correspondre à un ticker reconnu par Twelve Data (actions US, forex type EUR/USD, crypto type BTC/USD). Le champ "Nom" sert uniquement à mieux filtrer les actualités liées à cet actif.</p>
+        <p class="form-hint">Pour les actions US, le forex (EUR/USD) et les cryptos (BTC/USD), laisse "Bourse / pays" vide. Pour une valeur internationale (ex: Advantest à Tokyo), mets le ticker nu dans "Symbole" (ex: <code>6857</code>, pas <code>6857.T</code>) et précise "Japan" ou le nom de la bourse dans le second champ.</p>
       </div>
 
       <!-- Table des positions -->
