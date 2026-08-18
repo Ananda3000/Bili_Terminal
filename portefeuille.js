@@ -9,6 +9,7 @@
   const totalDeltaEl = document.getElementById('totalDelta');
   const addForm = document.getElementById('addForm');
   const symbolInput = document.getElementById('symbolInput');
+  const exchangeInput = document.getElementById('exchangeInput');
   const nameInput = document.getElementById('nameInput');
   const qtyInput = document.getElementById('qtyInput');
   const priceInput = document.getElementById('priceInput');
@@ -53,6 +54,22 @@
 
   let holdings = loadHoldings();
   let quotesCache = {};
+  let fxRatesCache = {};
+
+  function currencySymbol(currency) {
+    if (!currency || currency === 'USD') return '$';
+    if (currency === 'EUR') return '€';
+    if (currency === 'GBP') return '£';
+    if (currency === 'JPY') return '¥';
+    return currency + ' ';
+  }
+
+  function toUsd(value, currency) {
+    if (value === null) return null;
+    if (!currency || currency === 'USD') return value;
+    const rate = fxRatesCache[currency];
+    return rate ? value * rate : null; // pas de taux dispo -> exclu du total plutôt que faussé
+  }
 
   function renderHoldings() {
     if (!holdings.length) {
@@ -61,6 +78,7 @@
       totalValueEl.textContent = '$0.00';
       totalDeltaEl.textContent = '—';
       totalDeltaEl.className = 'stat-delta neutral';
+      document.getElementById('totalValueNote').textContent = '';
       return;
     }
     emptyPortfolio.classList.add('hidden');
@@ -68,14 +86,24 @@
     let totalValue = 0;
     let weightedChangeSum = 0;
 
+    let excludedFromTotal = false;
+
     const rows = holdings.map((h, idx) => {
       const quote = quotesCache[h.symbol];
       const price = quote && quote.available ? quote.price : null;
       const pct = quote && quote.available ? quote.percentChange : null;
+      const currency = quote && quote.available ? quote.currency : null;
+      const symbol = currencySymbol(currency);
       const value = price !== null ? price * h.quantity : null;
+      const valueUsd = value !== null ? toUsd(value, currency) : null;
+
       if (value !== null) {
-        totalValue += value;
-        if (pct !== null) weightedChangeSum += value * pct;
+        if (valueUsd !== null) {
+          totalValue += valueUsd;
+          if (pct !== null) weightedChangeSum += valueUsd * pct;
+        } else {
+          excludedFromTotal = true;
+        }
       }
 
       let plValue = null;
@@ -88,17 +116,17 @@
       const dayText = pct !== null && pct !== undefined ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '—';
 
       const plDirection = plValue > 0 ? 'positive' : plValue < 0 ? 'negative' : 'neutral';
-      const plText = plValue !== null ? `${plValue > 0 ? '+' : ''}$${formatMoney(plValue)}` : '—';
+      const plText = plValue !== null ? `${plValue > 0 ? '+' : ''}${symbol}${formatMoney(plValue)}` : '—';
 
       return `
         <tr>
           <td>
             <div class="holding-symbol">${escapeHtml(h.symbol)}</div>
-            ${h.name ? `<div class="holding-name">${escapeHtml(h.name)}</div>` : ''}
+            ${h.name || h.exchange ? `<div class="holding-name">${escapeHtml([h.name, h.exchange].filter(Boolean).join(' · '))}</div>` : ''}
           </td>
           <td>${h.quantity}</td>
-          <td>${price !== null ? '$' + formatMoney(price) : (quote && !quote.available ? 'indisponible' : '…')}</td>
-          <td>${value !== null ? '$' + formatMoney(value) : '—'}</td>
+          <td>${price !== null ? symbol + formatMoney(price) : (quote && !quote.available ? 'indisponible' : '…')}</td>
+          <td>${value !== null ? symbol + formatMoney(value) : '—'}</td>
           <td class="stat-delta ${dayDirection}">${dayText === '—' ? '—' : dayArrow + ' ' + dayText}</td>
           <td class="stat-delta ${plDirection}">${plText}</td>
           <td><button class="delete-btn" data-idx="${idx}" title="Supprimer">🗑</button></td>
@@ -107,7 +135,10 @@
     });
 
     holdingsBody.innerHTML = rows.join('');
-    totalValueEl.textContent = '$' + formatMoney(totalValue);
+    totalValueEl.textContent = '$' + formatMoney(totalValue) + (excludedFromTotal ? ' *' : '');
+    document.getElementById('totalValueNote').textContent = excludedFromTotal
+      ? '* un ou plusieurs actifs en devise étrangère sont exclus du total (taux de change indisponible pour le moment)'
+      : '';
 
     if (totalValue > 0) {
       const blendedPct = weightedChangeSum / totalValue;
@@ -137,8 +168,8 @@
     }
     refreshBtn.classList.add('spinning');
     try {
-      const symbols = holdings.map((h) => h.symbol).join(',');
-      const res = await fetch(`/api/portfolio-quotes?symbols=${encodeURIComponent(symbols)}`, { cache: 'no-store' });
+      const items = holdings.map((h) => ({ symbol: h.symbol, exchange: h.exchange || undefined }));
+      const res = await fetch(`/api/portfolio-quotes?items=${encodeURIComponent(JSON.stringify(items))}`, { cache: 'no-store' });
       const data = await res.json();
 
       if (!data.configured) {
@@ -149,6 +180,7 @@
       }
       configBanner.classList.add('hidden');
       quotesCache = data.quotes || {};
+      fxRatesCache = data.fxRates || {};
       const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString('fr-FR') : '';
       statusEl.textContent = updated ? `Actualisé à ${updated}` : '—';
       renderHoldings();
@@ -227,13 +259,14 @@
   addForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const symbol = symbolInput.value.trim().toUpperCase();
+    const exchange = exchangeInput.value.trim();
     const name = nameInput.value.trim();
     const quantity = parseFloat(qtyInput.value);
     const avgPrice = priceInput.value ? parseFloat(priceInput.value) : null;
 
     if (!symbol || !quantity || quantity <= 0) return;
 
-    holdings.push({ symbol, name, quantity, avgPrice });
+    holdings.push({ symbol, exchange, name, quantity, avgPrice });
     saveHoldings(holdings);
     addForm.reset();
     loadQuotes();
