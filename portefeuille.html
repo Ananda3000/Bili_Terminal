@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MonTerminal — Portefeuille</title>
+<meta name="description" content="Suis tes actifs, leur valeur en direct et les actualités qui les concernent." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">MonTerminal</span>
+      </div>
+      <nav class="mainnav">
+        <a href="index.html" class="nav-item">Actualités</a>
+        <a href="marches.html" class="nav-item">Marchés</a>
+        <a href="calendrier.html" class="nav-item">Calendrier</a>
+        <a href="portefeuille.html" class="nav-item active">Portefeuille</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Carte</a>
+      </nav>
+      <div class="topbar-right">
+        <span id="clock" class="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <div>
+          <h1 style="font-size: 18px; margin: 0 0 4px 0;">Portefeuille</h1>
+          <div class="status-line"><span id="statusText">—</span></div>
+        </div>
+        <div class="toolbar-right">
+          <button id="refreshBtn" class="refresh-btn" title="Actualiser">⟳</button>
+        </div>
+      </div>
+
+      <div id="configBanner" class="config-banner hidden"></div>
+
+      <!-- Valeur totale -->
+      <div class="hero-tile">
+        <div class="hero-label">Valeur totale du portefeuille</div>
+        <div class="hero-value" id="totalValue">—</div>
+        <div class="stat-delta neutral" id="totalDelta">—</div>
+      </div>
+
+      <!-- Formulaire d'ajout -->
+      <div class="form-card">
+        <h2 class="section-title">Ajouter un actif</h2>
+        <form id="addForm" class="add-form">
+          <div class="field">
+            <label for="symbolInput">Symbole *</label>
+            <input id="symbolInput" type="text" placeholder="ex: AAPL, MSFT, BTC/USD" required />
+          </div>
+          <div class="field">
+            <label for="nameInput">Nom (pour les actus)</label>
+            <input id="nameInput" type="text" placeholder="ex: Apple" />
+          </div>
+          <div class="field">
+            <label for="qtyInput">Quantité *</label>
+            <input id="qtyInput" type="number" step="any" min="0" placeholder="ex: 10" required />
+          </div>
+          <div class="field">
+            <label for="priceInput">Prix d'achat moyen</label>
+            <input id="priceInput" type="number" step="any" min="0" placeholder="optionnel" />
+          </div>
+          <button type="submit" class="add-btn">+ Ajouter</button>
+        </form>
+        <p class="form-hint">Le symbole doit correspondre à un ticker reconnu par Twelve Data (actions US, forex type EUR/USD, crypto type BTC/USD). Le champ "Nom" sert uniquement à mieux filtrer les actualités liées à cet actif.</p>
+      </div>
+
+      <!-- Table des positions -->
+      <div class="table-card">
+        <table class="holdings-table" id="holdingsTable">
+          <thead>
+            <tr>
+              <th>Actif</th>
+              <th>Quantité</th>
+              <th>Prix actuel</th>
+              <th>Valeur</th>
+              <th>Jour</th>
+              <th>+/- value</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="holdingsBody">
+            <!-- lignes injectées en JS -->
+          </tbody>
+        </table>
+        <div id="emptyPortfolio" class="empty-state hidden">
+          Ton portefeuille est vide. Ajoute un premier actif ci-dessus.
+        </div>
+      </div>
+
+      <!-- Actus liées au portefeuille -->
+      <h2 class="section-title" style="margin-top: 32px;">Actus de mon portefeuille</h2>
+      <div class="status-line" id="newsStatusText">—</div>
+      <section id="portfolioFeed" class="feed-grid" style="margin-top: 12px;"></section>
+      <div id="emptyNews" class="empty-state hidden">
+        Aucune actualité récente ne mentionne les actifs de ton portefeuille (le flux général en couvre une sélection, pas l'exhaustivité).
+      </div>
+    </main>
+  </div>
+
+  <script src="portefeuille.js"></script>
+</body>
+</html>
