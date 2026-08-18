@@ -125,7 +125,7 @@
             ${h.name || h.exchange ? `<div class="holding-name">${escapeHtml([h.name, h.exchange].filter(Boolean).join(' · '))}</div>` : ''}
           </td>
           <td>${h.quantity}</td>
-          <td>${price !== null ? symbol + formatMoney(price) : (quote && !quote.available ? `<span title="${escapeHtml(quote.error || '')}">indisponible</span>` : '…')}</td>
+          <td>${price !== null ? symbol + formatMoney(price) : (quote && !quote.available ? `indisponible${quote.error ? `<div class="holding-name">${escapeHtml(quote.error)}</div>` : ''}` : '…')}</td>
           <td>${value !== null ? symbol + formatMoney(value) : '—'}</td>
           <td class="stat-delta ${dayDirection}">${dayText === '—' ? '—' : dayArrow + ' ' + dayText}</td>
           <td class="stat-delta ${plDirection}">${plText}</td>
