@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MonTerminal — Marchés</title>
+<meta name="description" content="Indices, VIX, Dollar Index (DXY), or, forex et taux en direct." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">MonTerminal</span>
+      </div>
+      <nav class="mainnav">
+        <a href="index.html" class="nav-item">Actualités</a>
+        <a href="marches.html" class="nav-item active">Marchés</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Calendrier</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Portefeuille</a>
+        <a href="#" class="nav-item disabled" title="Bientôt disponible">Carte</a>
+      </nav>
+      <div class="topbar-right">
+        <span id="clock" class="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <div>
+          <h1 style="font-size: 18px; margin: 0 0 4px 0;">Marchés</h1>
+          <div class="status-line" id="statusLineWrap">
+            <span id="statusText">Chargement des données de marché…</span>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <button id="refreshBtn" class="refresh-btn" title="Actualiser">⟳</button>
+        </div>
+      </div>
+
+      <div id="configBanner" class="config-banner hidden"></div>
+
+      <section id="statsGrid" class="stat-grid" aria-live="polite">
+        <!-- Les tuiles sont injectées ici en JS -->
+      </section>
+
+      <p style="color: var(--text-dim); font-size: 12px; margin-top: 24px;">
+        Données fournies par Twelve Data, actualisées chaque minute. Le VIX, le Dollar Index (DXY) et les taux longs sont approximés via des ETF qui les répliquent (VIXY, UUP, TLT) car les indices bruts ne sont pas disponibles en temps réel sur l'offre gratuite.
+      </p>
+    </main>
+  </div>
+
+  <script src="marches.js"></script>
+</body>
+</html>
